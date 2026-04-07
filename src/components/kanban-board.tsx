@@ -17,6 +17,9 @@ import TaskCard from "@/components/task-card";
 import AddTaskDialog from "@/components/add-task-dialog";
 
 type TaskStatus = "todo" | "in-progress" | "done";
+type KanbanBoardProps = {
+  projectId: Id<"projects">;
+};
 
 const COLUMNS: { title: string; status: TaskStatus }[] = [
   { title: "To Do", status: "todo" },
@@ -24,7 +27,7 @@ const COLUMNS: { title: string; status: TaskStatus }[] = [
   { title: "Done", status: "done" },
 ];
 
-function KanbanBoard() {
+function KanbanBoard({ projectId }: KanbanBoardProps) {
   const tasks = useQuery(api.tasks.list);
   const updateStatus = useUpdateTaskStatus();
   const [activeTask, setActiveTask] = useState<Doc<"tasks"> | null>(null);
@@ -70,7 +73,7 @@ function KanbanBoard() {
     >
       <div>
         <div className="mb-6 flex justify-end">
-          <AddTaskDialog />
+          <AddTaskDialog projectId={projectId} />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {COLUMNS.map((column) => (
