@@ -6,7 +6,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/project-planner/",
+  base: "/projectPlanner/",
   plugins: [tanstackRouter(), react(), tailwindcss()],
   resolve: {
     alias: {
