@@ -1,5 +1,8 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
+
+const CASCADE_DELETE_BATCH_SIZE = 100;
 
 //returns all projects
 export const list = query({
@@ -64,13 +67,36 @@ export const remove = mutation({
     id: v.id("projects"),
   },
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.id);
+    if (!project) {
+      return;
+    }
+
+    await ctx.scheduler.runAfter(0, internal.projects.deleteProjectCascade, {
+      id: args.id,
+    });
+  },
+});
+
+export const deleteProjectCascade = internalMutation({
+  args: {
+    id: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.id))
-      .collect();
+      .take(CASCADE_DELETE_BATCH_SIZE);
 
     for (const task of tasks) {
-      await ctx.db.delete("task._id");
+      await ctx.db.delete(task._id);
+    }
+
+    if (tasks.length === CASCADE_DELETE_BATCH_SIZE) {
+      await ctx.scheduler.runAfter(0, internal.projects.deleteProjectCascade, {
+        id: args.id,
+      });
+      return;
     }
 
     await ctx.db.delete(args.id);
