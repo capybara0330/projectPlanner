@@ -28,8 +28,8 @@ const COLUMNS: { title: string; status: TaskStatus }[] = [
 ];
 
 function KanbanBoard({ projectId }: KanbanBoardProps) {
-  const tasks = useQuery(api.tasks.list);
-  const updateStatus = useUpdateTaskStatus();
+  const tasks = useQuery(api.tasks.list, { projectId });
+  const updateStatus = useUpdateTaskStatus(projectId);
   const [activeTask, setActiveTask] = useState<Doc<"tasks"> | null>(null);
 
   const sensors = useSensors(
