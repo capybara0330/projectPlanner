@@ -13,16 +13,12 @@ export const Route = createFileRoute("/")({
 
 function ProjectListPage() {
   const [searchQuery, setSearchQuery] = useState("");
+
   const { results, status, loadMore } = usePaginatedQuery(
     api.projects.list,
-    {},
+    searchQuery.trim() ? { search: searchQuery.trim() } : {},
     { initialNumItems: 6 },
   );
-  const filtered = searchQuery.trim()
-    ? results.filter((p) =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-    : results;
 
   return (
     <div>
@@ -35,7 +31,7 @@ function ProjectListPage() {
       </div>
       {status === "LoadingFirstPage" ? (
         <p className="text-muted-foreground">Loading projects...</p>
-      ) : filtered.length === 0 ? (
+      ) : results.length === 0 ? (
         <p className="py-12 text-center text-muted-foreground">
           {searchQuery.trim()
             ? "No matching projects found"
@@ -44,7 +40,7 @@ function ProjectListPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((project) => (
+            {results.map((project) => (
               <ProjectCard key={project._id} project={project} />
             ))}
           </div>
